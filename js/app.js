@@ -169,6 +169,7 @@
       cmd: {},
       view: 0,
       bgArt: '',
+      bgCdn: '',
       bgCard: ''
     };
   }
@@ -611,8 +612,8 @@
       panel.style.left = '0px';
       panel.style.top = '0px';
     }
-    panel.style.webkitTransform = 'rotate(' + rot + 'deg)';
-    panel.style.transform = 'rotate(' + rot + 'deg)';
+    panel.style.webkitTransform = rot ? 'rotate(' + rot + 'deg)' : 'none';
+    panel.style.transform = rot ? 'rotate(' + rot + 'deg)' : 'none';
     seat.setAttribute('data-rot', String(rot));
   }
 
@@ -636,6 +637,7 @@
     var life = document.createElement('div');
     var caption = document.createElement('div');
     var cmdRow = document.createElement('div');
+    var artImg = document.createElement('img');
     var shade = document.createElement('div');
     var dead = document.createElement('div');
     var skull = document.createElement('span');
@@ -675,6 +677,9 @@
     life.setAttribute('data-act', 'keypad');
     caption.className = 'life-caption';
     cmdRow.className = 'cmd-row';
+    artImg.className = 'panel-art';
+    artImg.alt = '';
+    artImg.setAttribute('referrerpolicy', 'no-referrer');
     shade.className = 'panel-shade';
     dead.className = 'dead-mask';
     skull.innerHTML = 'PERDIO';
@@ -693,6 +698,7 @@
     hud.appendChild(caption);
     hud.appendChild(cmdRow);
     hud.appendChild(bot);
+    panel.appendChild(artImg);
     panel.appendChild(shade);
     panel.appendChild(hitM);
     panel.appendChild(hitP);
@@ -825,16 +831,45 @@
     var cmdRow = seat.getElementsByClassName('cmd-row')[0];
     var bot = seat.getElementsByClassName('hud-bot')[0];
     var dead = seat.getElementsByClassName('dead-mask')[0];
+    var artEl = seat.getElementsByClassName('panel-art')[0];
     var value;
     var label;
     var boxW;
+    var src;
 
     panel.style.backgroundColor = p.color;
-    if (p.bgArt) {
-      panel.style.backgroundImage = 'url(' + p.bgArt + ')';
+    panel.style.backgroundImage = 'none';
+    if (p.bgArt && artEl) {
+      src = p.bgArt;
+      artEl.setAttribute('referrerpolicy', 'no-referrer');
+      if (p.bgCdn) {
+        artEl.setAttribute('data-cdn', p.bgCdn);
+      }
       addClass(panel, 'has-art');
-    } else {
-      panel.style.backgroundImage = 'none';
+      if (artEl.getAttribute('src') !== src) {
+        artEl.style.display = 'none';
+        artEl.onload = function () {
+          artEl.style.display = 'block';
+        };
+        artEl.onerror = function () {
+          var cdn = artEl.getAttribute('data-cdn');
+          artEl.onerror = null;
+          if (cdn && artEl.getAttribute('src') !== cdn) {
+            artEl.src = cdn;
+          } else {
+            artEl.style.display = 'none';
+            removeClass(panel, 'has-art');
+          }
+        };
+        artEl.src = src;
+      } else {
+        artEl.style.display = 'block';
+      }
+    } else if (artEl) {
+      artEl.onload = null;
+      artEl.onerror = null;
+      artEl.removeAttribute('src');
+      artEl.style.display = 'none';
       removeClass(panel, 'has-art');
     }
     nameEl.innerHTML = escapeHtml(p.name);
@@ -987,7 +1022,7 @@
     hideCardSuggest();
     if (p.bgArt) {
       $('player-card-status').innerHTML = escapeHtml(p.bgCard || 'Fondo activo');
-      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + p.bgArt + '" alt=""></div>';
+      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + p.bgArt + '" alt="" referrerpolicy="no-referrer"></div>';
     } else {
       $('player-card-status').innerHTML = '';
       $('player-card-preview').innerHTML = '';
@@ -1070,11 +1105,21 @@
   function cardArtUrl(card) {
     var face;
     if (card.image_uris) {
-      return card.image_uris.art_crop || card.image_uris.normal || card.image_uris.small || '';
+      return card.image_uris.normal || card.image_uris.large || card.image_uris.art_crop || card.image_uris.small || '';
     }
     if (card.card_faces && card.card_faces[0] && card.card_faces[0].image_uris) {
       face = card.card_faces[0].image_uris;
-      return face.art_crop || face.normal || face.small || '';
+      return face.normal || face.large || face.art_crop || face.small || '';
+    }
+    return '';
+  }
+
+  function cardApiImageUrl(card, version) {
+    if (card && card.id) {
+      return 'https://api.scryfall.com/cards/' + card.id + '?format=image&version=' + (version || 'normal');
+    }
+    if (card && card.name) {
+      return 'https://api.scryfall.com/cards/named?exact=' + encodeURIComponent(card.name) + '&format=image&version=' + (version || 'normal');
     }
     return '';
   }
@@ -1110,7 +1155,7 @@
         $('player-card-status').innerHTML = 'Respuesta invalida.';
         return;
       }
-      art = cardArtUrl(card);
+      art = cardApiImageUrl(card, 'normal') || cardArtUrl(card);
       if (!art) {
         $('player-card-status').innerHTML = 'Esa carta no tiene imagen.';
         return;
@@ -1118,9 +1163,10 @@
       p = state.players[idx];
       p.bgCard = card.name;
       p.bgArt = art;
+      p.bgCdn = cardArtUrl(card);
       $('player-card-query').value = card.name;
       $('player-card-status').innerHTML = escapeHtml(card.name);
-      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + art + '" alt=""></div>';
+      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + art + '" alt="" referrerpolicy="no-referrer"></div>';
       save();
       updateSeat(idx);
     });
@@ -1134,6 +1180,7 @@
     }
     p = state.players[idx];
     p.bgArt = '';
+    p.bgCdn = '';
     p.bgCard = '';
     $('player-card-query').value = '';
     $('player-card-status').innerHTML = 'Fondo quitado.';
