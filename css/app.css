@@ -187,6 +187,27 @@ body.is-fs #winner-banner {
   overflow: hidden;
   -webkit-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
+  background-repeat: no-repeat;
+  background-position: center 28%;
+  -webkit-background-size: cover;
+  background-size: cover;
+}
+
+.panel-shade {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.panel.has-art .panel-shade {
+  display: block;
+  background: #000;
+  opacity: 0.42;
 }
 
 .hit {
@@ -935,6 +956,55 @@ body.is-fs #winner-banner {
   width: 26%;
   padding: 10px 0;
   text-align: center;
+}
+
+.bg-preview {
+  margin: 8px 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #111;
+  max-height: 130px;
+}
+
+.bg-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+#btn-player-card-clear {
+  margin: 0 0 10px;
+}
+
+.suggest-list {
+  display: none;
+  margin: 0 0 8px;
+  background: #141414;
+  border: 1px solid #555;
+  border-radius: 6px;
+  max-height: 168px;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.suggest-list.is-open {
+  display: block;
+}
+
+.suggest-item {
+  display: block;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.25;
+  background: #1c1c1c;
+  border-bottom: 1px solid #333;
+  border-radius: 0;
+}
+
+.suggest-item:last-child {
+  border-bottom: 0;
 }
 
 .card-block {
