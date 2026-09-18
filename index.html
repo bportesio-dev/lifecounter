@@ -17,9 +17,10 @@
   <div id="app">
     <div id="toolbar">
       <button type="button" class="tb-btn" id="btn-new" data-act="new">Nueva</button>
+      <button type="button" class="tb-btn" id="btn-fs" data-act="fs">Completa</button>
       <button type="button" class="tb-btn" id="btn-layout" data-act="layout">Mesa</button>
       <button type="button" class="tb-btn" id="btn-dice" data-act="dice">Dados</button>
-      <button type="button" class="tb-btn" id="btn-high" data-act="high">High roll</button>
+      <button type="button" class="tb-btn" id="btn-high" data-act="high">d20</button>
       <div class="tb-group">
         <button type="button" class="tb-icon" id="btn-turn-prev" data-act="turn-prev">&#9664;</button>
         <span id="turn-label">Turno 1</span>
@@ -34,6 +35,7 @@
     </div>
 
     <div id="board"></div>
+    <button type="button" id="btn-exit-fs" data-act="exit-fs" title="Salir de pantalla completa">X</button>
     <div id="winner-banner" class="hidden">
       <span id="winner-text"></span>
     </div>
