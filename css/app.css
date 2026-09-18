@@ -192,7 +192,7 @@ body.is-fs #winner-banner {
 .hit {
   position: absolute;
   top: 40px;
-  bottom: 84px;
+  bottom: 90px;
   width: 34%;
   z-index: 1;
 }
@@ -435,9 +435,9 @@ body.is-fs #winner-banner {
   top: 50%;
   margin-top: 16px;
   text-align: center;
-  font-size: 11px;
+  font-size: 15px;
   font-weight: bold;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
   pointer-events: none;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
 }
@@ -447,7 +447,7 @@ body.is-fs #winner-banner {
   left: 4px;
   right: 4px;
   bottom: 38px;
-  height: 42px;
+  height: 52px;
   text-align: center;
   overflow: hidden;
   white-space: nowrap;
@@ -457,10 +457,10 @@ body.is-fs #winner-banner {
 
 .cmd-badge {
   display: inline-block;
-  min-width: 42px;
-  height: 40px;
-  margin: 0 2px;
-  padding: 1px 5px;
+  min-width: 52px;
+  height: 50px;
+  margin: 0 3px;
+  padding: 3px 7px;
   border-radius: 5px;
   border: 2px solid rgba(255, 255, 255, 0.28);
   vertical-align: top;
@@ -486,9 +486,10 @@ body.is-fs #winner-banner {
 }
 
 .cmd-badge-name {
-  font-size: 10px;
-  line-height: 14px;
-  opacity: 0.92;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 18px;
+  opacity: 0.95;
 }
 
 .cmd-badge-n {
@@ -544,15 +545,15 @@ body.is-fs #winner-banner {
 }
 
 .tight .cmd-badge {
-  min-width: 34px;
-  height: 34px;
-  margin: 0 1px;
-  padding: 1px 3px;
+  min-width: 44px;
+  height: 44px;
+  margin: 0 2px;
+  padding: 2px 5px;
 }
 
 .tight .cmd-badge-name {
-  font-size: 9px;
-  line-height: 12px;
+  font-size: 13px;
+  line-height: 16px;
 }
 
 .tight .cmd-badge-n {
@@ -569,17 +570,17 @@ body.is-fs #winner-banner {
 
 .tight .life-caption {
   margin-top: 8px;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .tight .cmd-row {
-  height: 36px;
+  height: 46px;
   bottom: 34px;
 }
 
 .tight .hit {
   top: 36px;
-  bottom: 72px;
+  bottom: 82px;
 }
 
 .tight .hud-bot {
