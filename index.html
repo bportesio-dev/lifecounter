@@ -79,6 +79,16 @@
       </label>
       <h3>Color</h3>
       <div id="color-row" class="color-row"></div>
+      <h3>Fondo de carta</h3>
+      <p class="sub">Busca el nombre en Scryfall (gratis) y se usa el arte como fondo.</p>
+      <div class="search-row">
+        <input type="text" id="player-card-query" placeholder="Atraxa" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button type="button" class="btn-gold" id="btn-player-card-go">Buscar</button>
+      </div>
+      <div id="player-card-suggest" class="suggest-list"></div>
+      <div id="player-card-status" class="sub"></div>
+      <div id="player-card-preview"></div>
+      <button type="button" class="btn" id="btn-player-card-clear">Quitar fondo</button>
       <label class="check">
         <input type="checkbox" id="player-partners"> Comandantes partner (2 da&ntilde;os de comandante)
       </label>
