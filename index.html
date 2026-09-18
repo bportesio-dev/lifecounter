@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Life Counter">
+  <meta name="format-detection" content="telephone=no">
+  <title>MTG Life Counter</title>
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+</head>
+<body>
+  <div id="app">
+    <div id="toolbar">
+      <button type="button" class="tb-btn" id="btn-new" data-act="new">Nueva</button>
+      <button type="button" class="tb-btn" id="btn-layout" data-act="layout">Mesa</button>
+      <button type="button" class="tb-btn" id="btn-dice" data-act="dice">Dados</button>
+      <button type="button" class="tb-btn" id="btn-high" data-act="high">High roll</button>
+      <div class="tb-group">
+        <button type="button" class="tb-icon" id="btn-turn-prev" data-act="turn-prev">&#9664;</button>
+        <span id="turn-label">Turno 1</span>
+        <button type="button" class="tb-icon" id="btn-turn-next" data-act="turn-next">&#9654;</button>
+      </div>
+      <div class="tb-group">
+        <button type="button" class="tb-icon" id="btn-timer" data-act="timer">&#9654;</button>
+        <span id="timer-label">00:00</span>
+      </div>
+      <button type="button" class="tb-btn" id="btn-search" data-act="search">Cartas</button>
+      <button type="button" class="tb-btn" id="btn-plane" data-act="plane">Planar</button>
+    </div>
+
+    <div id="board"></div>
+    <div id="winner-banner" class="hidden">
+      <span id="winner-text"></span>
+    </div>
+  </div>
+
+  <div id="overlay-setup" class="overlay is-open">
+    <div class="modal modal-wide">
+      <h1>MTG Life Counter</h1>
+      <p class="sub">Contador de vidas para Commander, compatible con iPad 2</p>
+
+      <div id="continue-wrap" class="hidden">
+        <button type="button" class="btn-gold" id="btn-continue">Continuar partida</button>
+      </div>
+
+      <h2>Jugadores</h2>
+      <div id="count-row" class="choice-row"></div>
+
+      <h2>Disposición de la mesa</h2>
+      <p class="sub">Cambia según cuántos juegan. Los números son el orden de los jugadores.</p>
+      <div id="layout-row" class="layout-row"></div>
+
+      <h2>Vida inicial</h2>
+      <div class="choice-row">
+        <button type="button" class="choice" data-life="20">20<br><small>Estandar</small></button>
+        <button type="button" class="choice" data-life="30">30<br><small>Two-Headed</small></button>
+        <button type="button" class="choice selected" data-life="40">40<br><small>Commander</small></button>
+      </div>
+
+      <div class="start-row">
+        <button type="button" class="btn-gold btn-lg" id="btn-start">Empezar partida</button>
+      </div>
+      <p class="hint">En el iPad: Safari &rarr; Compartir &rarr; A&ntilde;adir a pantalla de inicio para pantalla completa.</p>
+    </div>
+  </div>
+
+  <div id="overlay-player" class="overlay">
+    <div class="modal">
+      <h2 id="player-modal-title">Jugador</h2>
+      <label class="field">Nombre
+        <input type="text" id="player-name" maxlength="18" autocomplete="off" autocorrect="off">
+      </label>
+      <h3>Color</h3>
+      <div id="color-row" class="color-row"></div>
+      <label class="check">
+        <input type="checkbox" id="player-partners"> Comandantes partner (2 da&ntilde;os de comandante)
+      </label>
+      <h3>Da&ntilde;o de comandante</h3>
+      <p class="sub">Letal a 21. El + tambi&eacute;n resta vida.</p>
+      <div id="cmd-list"></div>
+      <h3>Contadores</h3>
+      <div id="counter-list"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-kill">Eliminar / revivir</button>
+        <button type="button" class="btn-gold" id="btn-player-close">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-keypad" class="overlay">
+    <div class="modal modal-sm">
+      <h2 id="keypad-title">Vida</h2>
+      <div id="keypad-value">0</div>
+      <div id="keypad"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-keypad-cancel">Cancelar</button>
+        <button type="button" class="btn-gold" id="btn-keypad-ok">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-dice" class="overlay">
+    <div class="modal">
+      <h2>Dados y moneda</h2>
+      <div class="choice-row" id="dice-types"></div>
+      <div class="dice-count-row">
+        <span>Cantidad</span>
+        <button type="button" class="tb-icon" id="dice-minus">-</button>
+        <strong id="dice-count">1</strong>
+        <button type="button" class="tb-icon" id="dice-plus">+</button>
+      </div>
+      <button type="button" class="btn-gold btn-lg" id="btn-roll">Tirar</button>
+      <div id="dice-result"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-coin">Moneda</button>
+        <button type="button" class="btn" id="btn-dice-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-high" class="overlay">
+    <div class="modal">
+      <h2>High roll (d20)</h2>
+      <p class="sub">Quien saque m&aacute;s alto empieza.</p>
+      <button type="button" class="btn-gold btn-lg" id="btn-high-roll">Tirar d20</button>
+      <div id="high-result"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-high-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-search" class="overlay">
+    <div class="modal modal-wide">
+      <h2>Buscar carta</h2>
+      <div class="search-row">
+        <input type="text" id="card-query" placeholder="Lightning Bolt" autocomplete="off" autocorrect="off" autocapitalize="off">
+        <button type="button" class="btn-gold" id="btn-card-go">Buscar</button>
+      </div>
+      <div id="card-status" class="sub"></div>
+      <div id="card-result"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-search-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-plane" class="overlay">
+    <div class="modal">
+      <h2>Dado planar</h2>
+      <p class="sub">4 caras vac&iacute;as, 1 caos y 1 planeswalk. El texto de los planos se lee de las cartas f&iacute;sicas.</p>
+      <button type="button" class="btn-gold btn-lg" id="btn-planar-roll">Tirar dado planar</button>
+      <div id="planar-result" class="planar-face">-</div>
+      <label class="field">Plano actual
+        <input type="text" id="plane-name" maxlength="40" placeholder="Nombre del plano" autocomplete="off">
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-plane-close">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-layout" class="overlay">
+    <div class="modal modal-wide">
+      <h2>Disposición de la mesa</h2>
+      <p class="sub">No se reinicia la partida, solo cambia cómo se sientan.</p>
+      <div id="layout-row-game" class="layout-row"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-gold" id="btn-layout-close">Listo</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="overlay-confirm" class="overlay">
+    <div class="modal modal-sm">
+      <h2>Nueva partida</h2>
+      <p>Se pierde el progreso actual de la mesa.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn" id="btn-confirm-no">Cancelar</button>
+        <button type="button" class="btn-gold" id="btn-confirm-yes">Nueva</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
