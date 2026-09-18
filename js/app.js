@@ -44,7 +44,10 @@
     keypadBuffer: '',
     diceSides: 20,
     diceCount: 1,
-    suppressClick: false
+    suppressClick: false,
+    suggestTimer: null,
+    suggestSeq: 0,
+    suggestNames: []
   };
 
   var timerId = null;
@@ -164,7 +167,9 @@
       partners: false,
       counters: emptyCounters(),
       cmd: {},
-      view: 0
+      view: 0,
+      bgArt: '',
+      bgCard: ''
     };
   }
 
@@ -631,6 +636,7 @@
     var life = document.createElement('div');
     var caption = document.createElement('div');
     var cmdRow = document.createElement('div');
+    var shade = document.createElement('div');
     var dead = document.createElement('div');
     var skull = document.createElement('span');
 
@@ -669,6 +675,7 @@
     life.setAttribute('data-act', 'keypad');
     caption.className = 'life-caption';
     cmdRow.className = 'cmd-row';
+    shade.className = 'panel-shade';
     dead.className = 'dead-mask';
     skull.innerHTML = 'PERDIO';
     dead.appendChild(skull);
@@ -686,6 +693,7 @@
     hud.appendChild(caption);
     hud.appendChild(cmdRow);
     hud.appendChild(bot);
+    panel.appendChild(shade);
     panel.appendChild(hitM);
     panel.appendChild(hitP);
     panel.appendChild(hud);
@@ -821,7 +829,14 @@
     var label;
     var boxW;
 
-    panel.style.background = p.color;
+    panel.style.backgroundColor = p.color;
+    if (p.bgArt) {
+      panel.style.backgroundImage = 'url(' + p.bgArt + ')';
+      addClass(panel, 'has-art');
+    } else {
+      panel.style.backgroundImage = 'none';
+      removeClass(panel, 'has-art');
+    }
     nameEl.innerHTML = escapeHtml(p.name);
     bot.innerHTML = chipsHtml(p);
     cmdRow.innerHTML = cmdBadgesHtml(index);
@@ -963,7 +978,168 @@
     $('counter-list').innerHTML = html;
     fillCmdList(index);
     $('btn-kill').innerHTML = p.dead ? 'Revivir' : 'Eliminar jugador';
+    fillPlayerCardUi(p);
     openOverlay('overlay-player');
+  }
+
+  function fillPlayerCardUi(p) {
+    $('player-card-query').value = p.bgCard || '';
+    hideCardSuggest();
+    if (p.bgArt) {
+      $('player-card-status').innerHTML = escapeHtml(p.bgCard || 'Fondo activo');
+      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + p.bgArt + '" alt=""></div>';
+    } else {
+      $('player-card-status').innerHTML = '';
+      $('player-card-preview').innerHTML = '';
+    }
+  }
+
+  function hideCardSuggest() {
+    var el = $('player-card-suggest');
+    el.innerHTML = '';
+    removeClass(el, 'is-open');
+    ui.suggestNames = [];
+    ui.suggestSeq += 1;
+    if (ui.suggestTimer) {
+      clearTimeout(ui.suggestTimer);
+      ui.suggestTimer = null;
+    }
+  }
+
+  function showCardSuggest(names) {
+    var el = $('player-card-suggest');
+    var html = '';
+    var i;
+    if (!names || !names.length) {
+      hideCardSuggest();
+      return;
+    }
+    ui.suggestNames = names;
+    for (i = 0; i < names.length; i++) {
+      html += '<button type="button" class="suggest-item" data-suggest-i="' + i + '">' +
+        escapeHtml(names[i]) + '</button>';
+    }
+    el.innerHTML = html;
+    addClass(el, 'is-open');
+  }
+
+  function fetchCardSuggest() {
+    var q = $('player-card-query').value.replace(/^\s+|\s+$/g, '');
+    var seq;
+    var url;
+    ui.suggestTimer = null;
+    if (q.length < 2) {
+      hideCardSuggest();
+      return;
+    }
+    ui.suggestSeq += 1;
+    seq = ui.suggestSeq;
+    url = 'https://api.scryfall.com/cards/autocomplete?q=' + encodeURIComponent(q);
+    xhrGet(url, function (err, text) {
+      var data;
+      if (seq !== ui.suggestSeq) {
+        return;
+      }
+      if (err) {
+        hideCardSuggest();
+        return;
+      }
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        hideCardSuggest();
+        return;
+      }
+      showCardSuggest(data.data || []);
+    });
+  }
+
+  function scheduleCardSuggest() {
+    if (ui.suggestTimer) {
+      clearTimeout(ui.suggestTimer);
+    }
+    ui.suggestTimer = setTimeout(fetchCardSuggest, 280);
+  }
+
+  function pickCardSuggest(name) {
+    hideCardSuggest();
+    $('player-card-query').value = name;
+    searchPlayerBg();
+  }
+
+  function cardArtUrl(card) {
+    var face;
+    if (card.image_uris) {
+      return card.image_uris.art_crop || card.image_uris.normal || card.image_uris.small || '';
+    }
+    if (card.card_faces && card.card_faces[0] && card.card_faces[0].image_uris) {
+      face = card.card_faces[0].image_uris;
+      return face.art_crop || face.normal || face.small || '';
+    }
+    return '';
+  }
+
+  function searchPlayerBg() {
+    var q = $('player-card-query').value.replace(/^\s+|\s+$/g, '');
+    var url;
+    var idx = ui.editingIndex;
+    var p;
+    $('player-card-status').innerHTML = 'Buscando...';
+    hideCardSuggest();
+    if (!q) {
+      $('player-card-status').innerHTML = 'Escribe el nombre de una carta.';
+      return;
+    }
+    if (idx < 0) {
+      return;
+    }
+    url = 'https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(q);
+    xhrGet(url, function (err, text) {
+      var card;
+      var art;
+      if (idx !== ui.editingIndex) {
+        return;
+      }
+      if (err) {
+        $('player-card-status').innerHTML = 'No se encontro. Prueba un nombre mas exacto o revisa la conexion.';
+        return;
+      }
+      try {
+        card = JSON.parse(text);
+      } catch (e) {
+        $('player-card-status').innerHTML = 'Respuesta invalida.';
+        return;
+      }
+      art = cardArtUrl(card);
+      if (!art) {
+        $('player-card-status').innerHTML = 'Esa carta no tiene imagen.';
+        return;
+      }
+      p = state.players[idx];
+      p.bgCard = card.name;
+      p.bgArt = art;
+      $('player-card-query').value = card.name;
+      $('player-card-status').innerHTML = escapeHtml(card.name);
+      $('player-card-preview').innerHTML = '<div class="bg-preview"><img src="' + art + '" alt=""></div>';
+      save();
+      updateSeat(idx);
+    });
+  }
+
+  function clearPlayerBg() {
+    var idx = ui.editingIndex;
+    var p;
+    if (idx < 0) {
+      return;
+    }
+    p = state.players[idx];
+    p.bgArt = '';
+    p.bgCard = '';
+    $('player-card-query').value = '';
+    $('player-card-status').innerHTML = 'Fondo quitado.';
+    $('player-card-preview').innerHTML = '';
+    save();
+    updateSeat(idx);
   }
 
   function fillCmdList(index) {
@@ -1242,6 +1418,8 @@
       var actEl;
       var viewN;
       var layCard;
+      var sugI;
+      var sugEl;
 
       if (closest(el, 'input')) {
         return;
@@ -1454,6 +1632,24 @@
       if (el.id === 'btn-player-close') {
         applyPlayerMenu();
         closeOverlay('overlay-player');
+        return;
+      }
+      if (el.id === 'btn-player-card-go') {
+        hideCardSuggest();
+        searchPlayerBg();
+        return;
+      }
+      if (el.id === 'btn-player-card-clear') {
+        hideCardSuggest();
+        clearPlayerBg();
+        return;
+      }
+      sugEl = closest(el, '[data-suggest-i]');
+      if (sugEl) {
+        sugI = parseInt(sugEl.getAttribute('data-suggest-i'), 10);
+        if (ui.suggestNames[sugI]) {
+          pickCardSuggest(ui.suggestNames[sugI]);
+        }
         return;
       }
       if (el.id === 'btn-kill') {
@@ -1901,6 +2097,32 @@
     var key = e.keyCode || e.which;
     if (key === 13) {
       searchCard();
+    }
+  });
+
+  on($('player-card-query'), 'keydown', function (e) {
+    var key = e.keyCode || e.which;
+    if (key === 13) {
+      hideCardSuggest();
+      searchPlayerBg();
+    }
+  });
+
+  on($('player-card-query'), 'input', function () {
+    scheduleCardSuggest();
+  });
+
+  on($('player-card-query'), 'keyup', function (e) {
+    var key = e.keyCode || e.which;
+    if (key === 13 || key === 37 || key === 38 || key === 39 || key === 40) {
+      return;
+    }
+    scheduleCardSuggest();
+  });
+
+  on($('player-card-suggest'), 'touchstart', function (e) {
+    if (closest(e.target, '[data-suggest-i]') && e.preventDefault) {
+      e.preventDefault();
     }
   });
 
