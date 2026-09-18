@@ -192,7 +192,7 @@ body.is-fs #winner-banner {
 .hit {
   position: absolute;
   top: 40px;
-  bottom: 68px;
+  bottom: 84px;
   width: 34%;
   z-index: 1;
 }
@@ -276,11 +276,11 @@ body.is-fs #winner-banner {
 }
 
 .hud-bot {
-  bottom: 3px;
-  height: 20px;
+  bottom: 4px;
+  height: 28px;
   text-align: center;
-  font-size: 11px;
-  line-height: 20px;
+  font-size: 15px;
+  line-height: 28px;
   white-space: nowrap;
   overflow: hidden;
   pointer-events: none;
@@ -446,7 +446,7 @@ body.is-fs #winner-banner {
   position: absolute;
   left: 4px;
   right: 4px;
-  bottom: 22px;
+  bottom: 38px;
   height: 42px;
   text-align: center;
   overflow: hidden;
@@ -574,12 +574,18 @@ body.is-fs #winner-banner {
 
 .tight .cmd-row {
   height: 36px;
-  bottom: 20px;
+  bottom: 34px;
 }
 
 .tight .hit {
   top: 36px;
-  bottom: 58px;
+  bottom: 72px;
+}
+
+.tight .hud-bot {
+  height: 26px;
+  font-size: 13px;
+  line-height: 26px;
 }
 
 .dead-mask {
@@ -613,9 +619,11 @@ body.is-fs #winner-banner {
   display: inline-block;
   background: rgba(0, 0, 0, 0.35);
   border-radius: 10px;
-  padding: 0 8px;
+  padding: 0 10px;
   margin: 0 3px;
-  line-height: 22px;
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 26px;
 }
 
 .chip.danger {
@@ -820,6 +828,8 @@ body.is-fs #winner-banner {
 .counter-row span {
   display: inline-block;
   width: 46%;
+  font-size: 16px;
+  font-weight: bold;
   line-height: 36px;
 }
 
