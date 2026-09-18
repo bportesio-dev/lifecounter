@@ -223,8 +223,8 @@
       return 'J' + m[1];
     }
     s = s.split(' ')[0];
-    if (s.length > 5) {
-      return s.substring(0, 5);
+    if (s.length > 8) {
+      return s.substring(0, 8);
     }
     return s;
   }
