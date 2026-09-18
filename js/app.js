@@ -625,6 +625,9 @@
     var btnPrev = document.createElement('button');
     var btnToggle = document.createElement('button');
     var btnNext = document.createElement('button');
+    var cellMenu = document.createElement('div');
+    var cellName = document.createElement('div');
+    var cellCmd = document.createElement('div');
     var life = document.createElement('div');
     var caption = document.createElement('div');
     var cmdRow = document.createElement('div');
@@ -646,19 +649,22 @@
     menu.className = 'btn-menu';
     menu.type = 'button';
     menu.setAttribute('data-act', 'menu');
-    menu.innerHTML = '&#9776;';
+    menu.innerHTML = '<span class="menu-bars"></span>';
     name.className = 'name';
+    cellMenu.className = 'hud-cell hud-cell-menu';
+    cellName.className = 'hud-cell hud-cell-name';
+    cellCmd.className = 'hud-cell hud-cell-cmd';
     cmdNav.className = 'cmd-nav';
     btnPrev.type = 'button';
+    btnPrev.className = 'cmd-arrow cmd-arrow-l';
     btnPrev.setAttribute('data-act', 'cmd-prev');
-    btnPrev.innerHTML = '&#9664;';
     btnToggle.type = 'button';
     btnToggle.className = 'cmd-toggle';
     btnToggle.setAttribute('data-act', 'cmd-toggle');
     btnToggle.innerHTML = 'CMD';
     btnNext.type = 'button';
+    btnNext.className = 'cmd-arrow cmd-arrow-r';
     btnNext.setAttribute('data-act', 'cmd-next');
-    btnNext.innerHTML = '&#9654;';
     life.className = 'life';
     life.setAttribute('data-act', 'keypad');
     caption.className = 'life-caption';
@@ -669,10 +675,12 @@
     cmdNav.appendChild(btnPrev);
     cmdNav.appendChild(btnToggle);
     cmdNav.appendChild(btnNext);
-
-    top.appendChild(menu);
-    top.appendChild(name);
-    top.appendChild(cmdNav);
+    cellMenu.appendChild(menu);
+    cellName.appendChild(name);
+    cellCmd.appendChild(cmdNav);
+    top.appendChild(cellMenu);
+    top.appendChild(cellName);
+    top.appendChild(cellCmd);
     hud.appendChild(top);
     hud.appendChild(life);
     hud.appendChild(caption);
@@ -704,8 +712,48 @@
     var seats = board.getElementsByClassName('seat');
     var i;
     for (i = 0; i < seats.length; i++) {
-      applySeatBox(seats[i], boxes[i]);
+      if (boxes[i]) {
+        applySeatBox(seats[i], boxes[i]);
+      }
     }
+  }
+
+  function relayoutSoon() {
+    setTimeout(function () {
+      if (state.started && state.players.length) {
+        layoutSeats();
+        renderAll();
+      }
+    }, 50);
+  }
+
+  function enterFullscreen() {
+    var root = document.documentElement;
+    addClass(document.body, 'is-fs');
+    try {
+      if (root.requestFullscreen) {
+        root.requestFullscreen();
+      } else if (root.webkitRequestFullscreen) {
+        root.webkitRequestFullscreen();
+      } else if (root.webkitRequestFullScreen) {
+        root.webkitRequestFullScreen();
+      }
+    } catch (e) {}
+    relayoutSoon();
+  }
+
+  function exitFullscreen() {
+    removeClass(document.body, 'is-fs');
+    try {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.webkitCancelFullScreen) {
+        document.webkitCancelFullScreen();
+      }
+    } catch (e) {}
+    relayoutSoon();
   }
 
   function renderToolbar() {
@@ -795,7 +843,7 @@
     caption.innerHTML = label;
 
     boxW = seat.clientWidth;
-    toggleClass(seat, 'tight', boxW < 280);
+    toggleClass(seat, 'tight', boxW < 260);
     if (boxW < 220 || (v.type === 'cmd' && value >= 21)) {
       addClass(lifeEl, 'small');
     } else {
@@ -1238,6 +1286,14 @@
         openOverlay('overlay-confirm');
         return;
       }
+      if (act === 'fs') {
+        enterFullscreen();
+        return;
+      }
+      if (act === 'exit-fs') {
+        exitFullscreen();
+        return;
+      }
       if (act === 'dice') {
         $('dice-result').innerHTML = '';
         openOverlay('overlay-dice');
@@ -1469,6 +1525,7 @@
         return;
       }
       if (el.id === 'btn-confirm-yes') {
+        exitFullscreen();
         closeAllOverlays();
         stopTimer(true);
         state.started = false;
@@ -1812,6 +1869,19 @@
         renderAll();
       }
     }, 250);
+  });
+
+  on(document, 'webkitfullscreenchange', function () {
+    if (!document.webkitFullscreenElement) {
+      removeClass(document.body, 'is-fs');
+      relayoutSoon();
+    }
+  });
+  on(document, 'fullscreenchange', function () {
+    if (!document.fullscreenElement) {
+      removeClass(document.body, 'is-fs');
+      relayoutSoon();
+    }
   });
 
   on($('player-name'), 'change', function () {
