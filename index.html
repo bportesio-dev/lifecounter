@@ -11,32 +11,18 @@
   <meta name="format-detection" content="telephone=no">
   <meta name="referrer" content="no-referrer">
   <title>MTG Life Counter</title>
-  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/app.css?v=6">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
 <body>
   <div id="app">
-    <div id="toolbar">
-      <button type="button" class="tb-btn" id="btn-new" data-act="new">Nueva</button>
-      <button type="button" class="tb-btn" id="btn-fs" data-act="fs">Completa</button>
-      <button type="button" class="tb-btn" id="btn-layout" data-act="layout">Mesa</button>
-      <button type="button" class="tb-btn" id="btn-dice" data-act="dice">Dados</button>
-      <button type="button" class="tb-btn" id="btn-high" data-act="high">d20</button>
-      <div class="tb-group">
-        <button type="button" class="tb-icon" id="btn-turn-prev" data-act="turn-prev">&#9664;</button>
-        <span id="turn-label">Turno 1</span>
-        <button type="button" class="tb-icon" id="btn-turn-next" data-act="turn-next">&#9654;</button>
-      </div>
-      <div class="tb-group">
-        <button type="button" class="tb-icon" id="btn-timer" data-act="timer">&#9654;</button>
-        <span id="timer-label">00:00</span>
-      </div>
-      <button type="button" class="tb-btn" id="btn-search" data-act="search">Cartas</button>
-      <button type="button" class="tb-btn" id="btn-plane" data-act="plane">Planar</button>
-    </div>
-
     <div id="board"></div>
-    <button type="button" id="btn-exit-fs" data-act="exit-fs" title="Salir de pantalla completa">X</button>
+    <button type="button" id="hub" class="hidden" data-act="hub" title="Menú">
+      <span class="hub-shape hub-shape-out"></span>
+      <span class="hub-shape hub-shape-in"></span>
+      <span class="hub-bars"></span>
+      <span class="hub-x">X</span>
+    </button>
     <div id="winner-banner" class="hidden">
       <span id="winner-text"></span>
     </div>
@@ -189,6 +175,40 @@
     </div>
   </div>
 
+  <div id="overlay-menu" class="overlay">
+    <div class="modal">
+      <h2>Menú</h2>
+      <h3>Partida</h3>
+      <button type="button" class="menu-item" id="btn-new" data-act="new">Nueva partida</button>
+      <button type="button" class="menu-item" id="btn-fs" data-act="fs">Pantalla completa</button>
+      <button type="button" class="menu-item" id="btn-layout" data-act="layout">Disposición de la mesa</button>
+      <h3>Herramientas</h3>
+      <button type="button" class="menu-item" id="btn-dice" data-act="dice">Dados y moneda</button>
+      <button type="button" class="menu-item" id="btn-high" data-act="high">High roll (d20)</button>
+      <button type="button" class="menu-item" id="btn-search" data-act="search">Buscar carta</button>
+      <button type="button" class="menu-item" id="btn-plane" data-act="plane">Dado planar</button>
+      <h3>Turno</h3>
+      <div class="counter-row">
+        <span>Turno</span>
+        <div class="ctr-btns">
+          <button type="button" id="btn-turn-prev" data-act="turn-prev">-</button>
+          <strong id="turn-label">1</strong>
+          <button type="button" id="btn-turn-next" data-act="turn-next">+</button>
+        </div>
+      </div>
+      <h3>Cronómetro</h3>
+      <div class="counter-row">
+        <span id="timer-label">00:00</span>
+        <div class="ctr-btns">
+          <button type="button" id="btn-timer" data-act="timer">&#9654;</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-gold" id="btn-menu-close">Listo</button>
+      </div>
+    </div>
+  </div>
+
   <div id="overlay-confirm" class="overlay">
     <div class="modal modal-sm">
       <h2>Nueva partida</h2>
@@ -200,6 +220,6 @@
     </div>
   </div>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
