@@ -62,24 +62,6 @@ input[type="text"] {
   bottom: 0;
 }
 
-#toolbar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  right: 0;
-  height: 44px;
-  background: #161616;
-  border-bottom: 1px solid #c9a227;
-  z-index: 5;
-  padding: 4px 5px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-  font-size: 0;
-  line-height: 0;
-}
-
 .tb-btn,
 .tb-icon {
   display: inline-block;
@@ -132,40 +114,137 @@ input[type="text"] {
 #board {
   position: absolute;
   left: 0;
-  top: 44px;
+  top: 0;
   right: 0;
   bottom: 0;
   background: #050505;
 }
 
-#btn-exit-fs {
+#hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 66px;
+  margin-left: -29px;
+  margin-top: -33px;
+  z-index: 9;
+  padding: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.hub-shape {
+  position: absolute;
+  left: 50%;
+  width: 50px;
+  height: 28px;
+  margin-left: -25px;
+  top: 19px;
+}
+
+.hub-shape:before,
+.hub-shape:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+}
+
+.hub-shape:before {
+  bottom: 100%;
+}
+
+.hub-shape:after {
+  top: 100%;
+}
+
+.hub-shape-out {
+  background: #c9a227;
+}
+
+.hub-shape-out:before {
+  border-bottom: 14px solid #c9a227;
+}
+
+.hub-shape-out:after {
+  border-top: 14px solid #c9a227;
+}
+
+.hub-shape-in {
+  width: 44px;
+  height: 24px;
+  margin-left: -22px;
+  top: 21px;
+  background: #161616;
+}
+
+.hub-shape-in:before {
+  border-left-width: 22px;
+  border-right-width: 22px;
+  border-bottom: 13px solid #161616;
+}
+
+.hub-shape-in:after {
+  border-left-width: 22px;
+  border-right-width: 22px;
+  border-top: 13px solid #161616;
+}
+
+.hub-bars,
+.hub-bars:before,
+.hub-bars:after {
+  position: absolute;
+  left: 50%;
+  width: 16px;
+  height: 2px;
+  margin-left: -8px;
+  background: #fff;
+}
+
+.hub-bars {
+  top: 32px;
+}
+
+.hub-bars:before,
+.hub-bars:after {
+  content: '';
+  left: 0;
+  margin-left: 0;
+}
+
+.hub-bars:before {
+  top: -6px;
+}
+
+.hub-bars:after {
+  top: 6px;
+}
+
+.hub-x {
   display: none;
   position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 48px;
-  height: 48px;
-  z-index: 8;
-  padding: 0;
-  background: #c9a227;
-  color: #111;
-  border-radius: 24px;
-  border: 2px solid #e8d48b;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
   font-size: 22px;
   font-weight: bold;
-  line-height: 44px;
+  line-height: 66px;
   text-align: center;
+  color: #fff;
 }
 
-body.is-fs #toolbar {
+#hub.is-close .hub-bars,
+#hub.is-close .hub-bars:before,
+#hub.is-close .hub-bars:after {
   display: none;
 }
 
-body.is-fs #board {
-  top: 0;
-}
-
-body.is-fs #btn-exit-fs {
+#hub.is-close .hub-x {
   display: block;
 }
 
@@ -176,6 +255,8 @@ body.is-fs #winner-banner {
 .seat {
   position: absolute;
   overflow: hidden;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
 }
 
 .panel {
@@ -185,8 +266,15 @@ body.is-fs #winner-banner {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
   -webkit-transform-origin: 50% 50%;
   transform-origin: 50% 50%;
+}
+
+.panel.rot-180 {
+  -webkit-transform: rotate(180deg) !important;
+  transform: rotate(180deg) !important;
 }
 
 .panel-art {
@@ -201,6 +289,8 @@ body.is-fs #winner-banner {
   z-index: 0;
   object-fit: cover;
   object-position: center 28%;
+  -webkit-border-radius: 16px;
+  border-radius: 16px;
 }
 
 .panel.has-art .panel-art {
@@ -221,13 +311,13 @@ body.is-fs #winner-banner {
 .panel.has-art .panel-shade {
   display: block;
   background: #000;
-  opacity: 0.42;
+  opacity: 0.28;
 }
 
 .hit {
   position: absolute;
-  top: 40px;
-  bottom: 90px;
+  top: 0;
+  bottom: 0;
   width: 34%;
   z-index: 1;
 }
@@ -246,17 +336,42 @@ body.is-fs #winner-banner {
 
 .hit-sign {
   position: absolute;
-  left: 0;
-  right: 0;
+  left: 50%;
   top: 50%;
-  height: 60px;
-  margin-top: -30px;
-  line-height: 60px;
-  text-align: center;
-  font-size: 48px;
-  font-weight: bold;
-  opacity: 0.32;
+  width: 36px;
+  height: 36px;
+  margin-left: -18px;
+  margin-top: -18px;
+  overflow: hidden;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+  opacity: 0.4;
   pointer-events: none;
+}
+
+.hit-sign:before,
+.hit-sign:after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: #fff;
+}
+
+.hit-minus .hit-sign:before,
+.hit-plus .hit-sign:before {
+  width: 28px;
+  height: 4px;
+  margin-left: -14px;
+  margin-top: -2px;
+}
+
+.hit-plus .hit-sign:after {
+  width: 4px;
+  height: 28px;
+  margin-left: -2px;
+  margin-top: -14px;
 }
 
 .hud {
@@ -277,7 +392,8 @@ body.is-fs #winner-banner {
 }
 
 .hud-top {
-  top: 4px;
+  top: auto;
+  bottom: 4px;
   left: 0;
   right: 0;
   height: 36px;
@@ -311,25 +427,33 @@ body.is-fs #winner-banner {
 }
 
 .hud-bot {
-  bottom: 4px;
-  height: 28px;
+  bottom: 40px;
+  height: 26px;
   text-align: center;
   font-size: 15px;
-  line-height: 28px;
+  line-height: 26px;
   white-space: nowrap;
   overflow: hidden;
   pointer-events: none;
 }
 
-.hud-top .name {
-  display: block;
-  height: 36px;
+.name {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 8px;
+  max-width: none;
+  height: 22px;
   font-size: 14px;
   font-weight: bold;
-  line-height: 36px;
-  padding: 0 6px;
+  line-height: 22px;
+  letter-spacing: 1px;
+  text-align: center;
+  text-transform: uppercase;
   overflow: hidden;
   white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
 }
 
 .cmd-nav {
@@ -446,21 +570,21 @@ body.is-fs #winner-banner {
 
 .life {
   position: absolute;
-  left: 32%;
-  right: 32%;
+  left: 18%;
+  right: 18%;
   top: 50%;
-  height: 72px;
-  margin-top: -54px;
+  height: 88px;
+  margin-top: -44px;
   text-align: center;
-  font-size: 68px;
+  font-size: 86px;
   font-weight: bold;
-  line-height: 72px;
+  line-height: 88px;
   pointer-events: auto;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.55);
 }
 
 .life.small {
-  font-size: 40px;
+  font-size: 48px;
 }
 
 .life-caption {
@@ -468,9 +592,9 @@ body.is-fs #winner-banner {
   left: 16%;
   right: 16%;
   top: 50%;
-  margin-top: 16px;
+  margin-top: 46px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   letter-spacing: 0.3px;
   pointer-events: none;
@@ -481,8 +605,8 @@ body.is-fs #winner-banner {
   position: absolute;
   left: 4px;
   right: 4px;
-  bottom: 38px;
-  height: 52px;
+  bottom: 68px;
+  height: 44px;
   text-align: center;
   overflow: hidden;
   white-space: nowrap;
@@ -492,10 +616,10 @@ body.is-fs #winner-banner {
 
 .cmd-badge {
   display: inline-block;
-  min-width: 52px;
-  height: 50px;
-  margin: 0 3px;
-  padding: 3px 7px;
+  min-width: 44px;
+  height: 42px;
+  margin: 0 2px;
+  padding: 2px 6px;
   border-radius: 5px;
   border: 2px solid rgba(255, 255, 255, 0.28);
   vertical-align: top;
@@ -543,8 +667,7 @@ body.is-fs #winner-banner {
 .tight .cmd-nav,
 .tight .cmd-nav button,
 .tight .btn-menu,
-.tight .cmd-toggle,
-.tight .hud-top .name {
+.tight .cmd-toggle {
   height: 32px;
 }
 
@@ -561,10 +684,11 @@ body.is-fs #winner-banner {
   width: 32px;
 }
 
-.tight .hud-top .name {
-  line-height: 32px;
-  font-size: 13px;
-  padding: 0 4px;
+.tight .name {
+  top: 6px;
+  font-size: 12px;
+  height: 20px;
+  line-height: 20px;
 }
 
 .tight .menu-bars {
@@ -597,28 +721,29 @@ body.is-fs #winner-banner {
 }
 
 .tight .life {
-  font-size: 42px;
-  height: 48px;
-  line-height: 48px;
-  margin-top: -40px;
+  font-size: 52px;
+  height: 56px;
+  line-height: 56px;
+  margin-top: -28px;
 }
 
 .tight .life-caption {
-  margin-top: 8px;
-  font-size: 13px;
+  margin-top: 30px;
+  font-size: 12px;
 }
 
 .tight .cmd-row {
-  height: 46px;
-  bottom: 34px;
+  height: 40px;
+  bottom: 60px;
 }
 
 .tight .hit {
-  top: 36px;
-  bottom: 82px;
+  top: 0;
+  bottom: 0;
 }
 
 .tight .hud-bot {
+  bottom: 36px;
   height: 26px;
   font-size: 13px;
   line-height: 26px;
@@ -669,10 +794,9 @@ body.is-fs #winner-banner {
 #winner-banner {
   position: absolute;
   left: 50%;
-  top: 50px;
+  top: 8px;
   width: 280px;
   margin-left: -140px;
-  margin-left: -160px;
   background: #c9a227;
   color: #111;
   text-align: center;
@@ -681,6 +805,25 @@ body.is-fs #winner-banner {
   font-weight: bold;
   z-index: 6;
   pointer-events: none;
+}
+
+#overlay-menu .menu-item {
+  display: block;
+  width: 100%;
+  margin: 0 0 8px;
+  padding: 12px 14px;
+  text-align: left;
+  background: #141414;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#overlay-menu .counter-row strong {
+  min-width: 36px;
+  line-height: 36px;
+  font-size: 16px;
 }
 
 .hidden {
