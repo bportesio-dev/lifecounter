@@ -563,7 +563,7 @@
   }
 
   function layoutBoxesFor(n, W, H, layoutId) {
-    var gap = 3;
+    var gap = 2;
     var id = layoutId || 'face';
     var around;
     var rotsTable = { n: 180, e: 270, s: 0, w: 90 };
@@ -587,6 +587,12 @@
     if (id === 'table' && n >= 3) {
       around = assignAround(n);
       return layoutBands(W, H, gap, around, rotsTable);
+    }
+    if (n === 4) {
+      return fillRows(W, H, gap, [
+        { ids: [2, 3], rot: 180 },
+        { ids: [0, 1], rot: 0 }
+      ]);
     }
     if (id === 'same') {
       return fillRows(W, H, gap, faceRows(n, false));
@@ -612,8 +618,20 @@
       panel.style.left = '0px';
       panel.style.top = '0px';
     }
-    panel.style.webkitTransform = rot ? 'rotate(' + rot + 'deg)' : 'none';
-    panel.style.transform = rot ? 'rotate(' + rot + 'deg)' : 'none';
+    if (rot === 180) {
+      panel.style.webkitTransform = 'rotate(180deg)';
+      panel.style.transform = 'rotate(180deg)';
+      addClass(panel, 'rot-180');
+    } else if (rot) {
+      panel.style.webkitTransform = 'rotate(' + rot + 'deg)';
+      panel.style.transform = 'rotate(' + rot + 'deg)';
+      removeClass(panel, 'rot-180');
+    } else {
+      panel.style.webkitTransform = 'none';
+      panel.style.transform = 'none';
+      removeClass(panel, 'rot-180');
+    }
+    toggleClass(seat, 'is-flip', rot === 180);
     seat.setAttribute('data-rot', String(rot));
   }
 
@@ -688,12 +706,12 @@
     cmdNav.appendChild(btnToggle);
     cmdNav.appendChild(btnNext);
     cellMenu.appendChild(menu);
-    cellName.appendChild(name);
     cellCmd.appendChild(cmdNav);
     top.appendChild(cellMenu);
     top.appendChild(cellName);
     top.appendChild(cellCmd);
     hud.appendChild(top);
+    hud.appendChild(name);
     hud.appendChild(life);
     hud.appendChild(caption);
     hud.appendChild(cmdRow);
@@ -718,6 +736,61 @@
     layoutSeats();
   }
 
+  function openHubAisle(boxes, W, H) {
+    var hw = 28;
+    var hh = 32;
+    var min = 48;
+    var cx = W / 2;
+    var cy = H / 2;
+    var i;
+    var b;
+    var right;
+    var bottom;
+    var midX;
+    var midY;
+    if (!boxes || !W || !H) {
+      return;
+    }
+    for (i = 0; i < boxes.length; i++) {
+      b = boxes[i];
+      if (!b) {
+        continue;
+      }
+      right = b.x + b.w;
+      bottom = b.y + b.h;
+      midX = b.x + b.w / 2;
+      midY = b.y + b.h / 2;
+      if (midX > cx - hw && midX < cx + hw && midY > cy - hh && midY < cy + hh) {
+        continue;
+      }
+      if (b.w < W * 0.7) {
+        if (midX < cx && right > cx - hw) {
+          if (cx - hw - b.x >= min) {
+            b.w = cx - hw - b.x;
+          }
+        } else if (midX >= cx && b.x < cx + hw) {
+          if (right - (cx + hw) >= min) {
+            b.w = right - (cx + hw);
+            b.x = cx + hw;
+          }
+        }
+      }
+      right = b.x + b.w;
+      if (b.h < H * 0.7) {
+        if (midY < cy && bottom > cy - hh) {
+          if (cy - hh - b.y >= min) {
+            b.h = cy - hh - b.y;
+          }
+        } else if (midY >= cy && b.y < cy + hh) {
+          if (bottom - (cy + hh) >= min) {
+            b.h = bottom - (cy + hh);
+            b.y = cy + hh;
+          }
+        }
+      }
+    }
+  }
+
   function layoutSeats() {
     var board = $('board');
     var W = board.clientWidth;
@@ -725,6 +798,7 @@
     var boxes = layoutBoxes(state.players.length, W, H);
     var seats = board.getElementsByClassName('seat');
     var i;
+    openHubAisle(boxes, W, H);
     for (i = 0; i < seats.length; i++) {
       if (boxes[i]) {
         applySeatBox(seats[i], boxes[i]);
@@ -741,9 +815,21 @@
     }, 50);
   }
 
+  function syncHub() {
+    var hub = $('hub');
+    if (!hub) {
+      return;
+    }
+    toggleClass(hub, 'hidden', !state.started);
+    toggleClass(hub, 'is-close', hasClass(document.body, 'is-fs'));
+    hub.title = hasClass(document.body, 'is-fs') ? 'Salir de pantalla completa' : 'Menú';
+  }
+
   function enterFullscreen() {
     var root = document.documentElement;
     addClass(document.body, 'is-fs');
+    closeOverlay('overlay-menu');
+    syncHub();
     try {
       if (root.requestFullscreen) {
         root.requestFullscreen();
@@ -758,6 +844,7 @@
 
   function exitFullscreen() {
     removeClass(document.body, 'is-fs');
+    syncHub();
     try {
       if (document.exitFullscreen) {
         document.exitFullscreen();
@@ -771,7 +858,7 @@
   }
 
   function renderToolbar() {
-    $('turn-label').innerHTML = 'Turno ' + state.turn;
+    $('turn-label').innerHTML = String(state.turn);
     $('timer-label').innerHTML = formatTime(state.timerSeconds);
     $('btn-timer').innerHTML = state.timerRunning ? '&#10073;&#10073;' : '&#9654;';
   }
@@ -878,7 +965,7 @@
 
     if (v.type === 'life') {
       value = p.life;
-      label = 'VIDA';
+      label = '';
       toggleEl.innerHTML = 'CMD';
       removeClass(toggleEl, 'on');
       removeClass(panel, 'cmd-mode');
@@ -891,6 +978,11 @@
     }
     lifeEl.innerHTML = String(value);
     caption.innerHTML = label;
+    if ((seat.getAttribute('data-rot') || '0') === '180') {
+      addClass(panel, 'rot-180');
+      panel.style.webkitTransform = 'rotate(180deg)';
+      panel.style.transform = 'rotate(180deg)';
+    }
 
     boxW = seat.clientWidth;
     toggleClass(seat, 'tight', boxW < 260);
@@ -930,6 +1022,7 @@
       updateSeat(i);
     }
     renderToolbar();
+    syncHub();
     w = winnerName();
     if (state.started && state.players.length > 1 && w) {
       removeClass(banner, 'hidden');
@@ -1507,7 +1600,17 @@
         }
       }
 
+      if (act === 'hub') {
+        if (hasClass(document.body, 'is-fs')) {
+          exitFullscreen();
+        } else {
+          renderToolbar();
+          openOverlay('overlay-menu');
+        }
+        return;
+      }
       if (act === 'new') {
+        closeOverlay('overlay-menu');
         openOverlay('overlay-confirm');
         return;
       }
@@ -1515,30 +1618,31 @@
         enterFullscreen();
         return;
       }
-      if (act === 'exit-fs') {
-        exitFullscreen();
-        return;
-      }
       if (act === 'dice') {
+        closeOverlay('overlay-menu');
         $('dice-result').innerHTML = '';
         openOverlay('overlay-dice');
         return;
       }
       if (act === 'layout') {
+        closeOverlay('overlay-menu');
         renderLayoutPicker('layout-row-game');
         openOverlay('overlay-layout');
         return;
       }
       if (act === 'high') {
+        closeOverlay('overlay-menu');
         $('high-result').innerHTML = '';
         openOverlay('overlay-high');
         return;
       }
       if (act === 'search') {
+        closeOverlay('overlay-menu');
         openOverlay('overlay-search');
         return;
       }
       if (act === 'plane') {
+        closeOverlay('overlay-menu');
         $('plane-name').value = state.planeName || '';
         openOverlay('overlay-plane');
         return;
@@ -1656,6 +1760,10 @@
         return;
       }
 
+      if (el.id === 'btn-menu-close') {
+        closeOverlay('overlay-menu');
+        return;
+      }
       if (el.id === 'btn-layout-close') {
         closeOverlay('overlay-layout');
         if (state.started && state.players.length) {
@@ -1773,6 +1881,7 @@
         stopTimer(true);
         state.started = false;
         save();
+        syncHub();
         openOverlay('overlay-setup');
         refreshSetup();
         return;
@@ -2117,12 +2226,14 @@
   on(document, 'webkitfullscreenchange', function () {
     if (!document.webkitFullscreenElement) {
       removeClass(document.body, 'is-fs');
+      syncHub();
       relayoutSoon();
     }
   });
   on(document, 'fullscreenchange', function () {
     if (!document.fullscreenElement) {
       removeClass(document.body, 'is-fs');
+      syncHub();
       relayoutSoon();
     }
   });
